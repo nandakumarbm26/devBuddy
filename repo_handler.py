@@ -3,7 +3,7 @@ from pathlib import Path
 from git import Repo, GitCommandError
 import re
 import json
-
+from logger import logging
 from dotenv import load_dotenv
 import os
 load_dotenv() 
@@ -13,7 +13,7 @@ LOG_FILE = os.getenv("LOG_FILE", "request_log.txt")
 GITHUB_REPO, BASE_BRANCH, GITHUB_TOKEN, GITHUB_USER = os.getenv("GITHUB_REPO"), os.getenv("BASE_BRANCH"), os.getenv("GITHUB_TOKEN"), os.getenv("GITHUB_USER")
 if not GITHUB_REPO or not BASE_BRANCH or not GITHUB_TOKEN or not GITHUB_USER:
     raise ValueError("Please set the GITHUB_REPO, BASE_BRANCH, GITHUB_TOKEN, and GITHUB_USER environment variables")
-    
+
 class GitRepoManager:
     def __init__(self, local_path: str, ignore=[".git"]):
         self.local_path = local_path
@@ -40,18 +40,18 @@ class GitRepoManager:
         self.repo.git.add('--all')
         self.repo.index.commit(commit_message)
         self.repo.git.push('--set-upstream', 'origin', branch_name)
-        print("Commited : branch",branch_name, "Commit",commit_message)
+        logging.info("Commited : branch",branch_name, "Commit",commit_message)
 
     def create_branch(self, branch_name: str, checkout: bool = True):
         try:
             branch_names = [str(br) for br in self.repo.branches]
             
             if branch_name in branch_names:
-                print(f"Branch '{branch_name}' already exists locally.")
+                logging.info(f"Branch '{branch_name}' already exists locally.")
                 if checkout:
                     br = self.repo.branches[branch_names.index(branch_name)]
                     br.checkout()
-                    print(f"Checked out existing branch '{branch_name}'.")
+                    logging.info(f"Checked out existing branch '{branch_name}'.")
                     return br
             else:
                 br = self.repo.create_head(branch_name)
@@ -59,6 +59,7 @@ class GitRepoManager:
                     br.checkout()
                     return br
         except GitCommandError as e:
+            logging.error(f"Error creating or checking out branch '{branch_name}': {e}")
             raise RuntimeError(f"Git command failed: {e}")
 
     def get_folder_structure(self) -> str:

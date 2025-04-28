@@ -123,5 +123,4 @@ def generate_code_change(issue_title, issue_body, files_tree, file_content):
         {"role": "system", "content": "Respond only in valid JSON format as described in the prompt."},
         {"role": "user", "content": prompt}
     ])
-    print(response)
     return response['choices'][0]['message']['content']

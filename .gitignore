@@ -3,4 +3,5 @@
 *test*
 repo
 __pycache__*
-requests.log
+issue.json
+*.log
