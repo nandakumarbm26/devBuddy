@@ -1,0 +1,6 @@
+.venv
+.env
+*test*
+repo
+__pycache__*
+requests.log
