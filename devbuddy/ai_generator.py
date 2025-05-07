@@ -1,7 +1,7 @@
 import openai
 import os, json
 from typing import List, Dict, Any
-from logger import logging
+from devbuddy.logger import logging
 from dotenv import load_dotenv
 load_dotenv() 
 

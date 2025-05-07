@@ -3,7 +3,7 @@ from pathlib import Path
 from git import Repo, GitCommandError
 import re
 import json
-from logger import logging
+from devbuddy.logger import logging
 from dotenv import load_dotenv
 import os
 load_dotenv() 

@@ -1,11 +1,11 @@
 from flask import Flask, request
 from dotenv import load_dotenv
 import os
-from ai_generator import generate_code_change, generate_text
-from repo_handler import GitRepoManager,  clean_text, extract_json_objects, fix_escape_pattern
-from github_utils import get_open_issues
+from devbuddy.ai_generator import generate_code_change, generate_text
+from devbuddy.repo_handler import GitRepoManager,  clean_text, extract_json_objects, fix_escape_pattern
+from devbuddy.github_utils import get_open_issues
 import json
-from logger import logging
+from devbuddy.logger import logging
 
 BASE_BRANCH = 'main'
 load_dotenv() 
