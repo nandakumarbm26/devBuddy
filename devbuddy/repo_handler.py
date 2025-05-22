@@ -40,7 +40,7 @@ class GitRepoManager:
         self.repo.git.add('--all')
         self.repo.index.commit(commit_message)
         self.repo.git.push('--set-upstream', 'origin', branch_name)
-        logging.info("Commited : branch",branch_name, "Commit",commit_message)
+        logging.info(f"Commited : branch,{branch_name}, Commit,{commit_message}")
 
     def create_branch(self, branch_name: str, checkout: bool = True):
         try:
