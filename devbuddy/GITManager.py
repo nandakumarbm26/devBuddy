@@ -1,4 +1,4 @@
-import os
+import os, requests
 from pathlib import Path
 from git import Repo, GitCommandError
 import re
@@ -52,7 +52,7 @@ class GitRepoManagerBase(ABC):
 
     def apply_code_changes(self, changes: list[tuple[str, str]]):
         for filename, content in changes:
-            file_path = os.path.join(self.local_path, filename)
+            file_path = os.path.join(self._local_path, filename)
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(content)
@@ -84,32 +84,32 @@ class GitRepoManagerBase(ABC):
             raise RuntimeError(f"Git command failed: {e}")
 
     def get_folder_structure(self) -> str:
-        if self.ignore is None:
-            self.ignore = []
+        if self._ignore is None:
+            self._ignore = []
         response = ""
-        for root, dirs, files in os.walk(self.local_path):
-            level = root.replace(self.local_path, '').count(os.sep)
+        for root, dirs, files in os.walk(self._local_path):
+            level = root.replace(self._local_path, '').count(os.sep)
             indent = ' ' * 4 * level
             folder_name = os.path.basename(root)
-            if folder_name in self.ignore:
+            if folder_name in self._ignore:
                 dirs[:] = []
                 continue
             response += f"{indent}{folder_name}/\n"
             subindent = ' ' * 4 * (level + 1)
             for f in files:
                 response += f"{subindent}{f}\n"
-            dirs[:] = [d for d in dirs if d not in self.ignore]
+            dirs[:] = [d for d in dirs if d not in self._ignore]
         return response
 
     def build_tree_with_file_contents(self) -> dict:
-        if self.ignore is None:
-            self.ignore = [".git"]
-        return self._build_tree_recursive(Path(self.local_path))
+        if self._ignore is None:
+            self._ignore = [".git"]
+        return self._build_tree_recursive(Path(self._local_path))
 
     def _build_tree_recursive(self, path: Path) -> dict:
         tree = {}
         for item in path.iterdir():
-            if item.name in self.ignore or item.suffix in ['.svg', '.png', '.jpeg', '.css']:
+            if item.name in self._ignore or item.suffix in ['.svg', '.png', '.jpeg', '.css']:
                 continue
             if item.is_dir():
                 tree[item.name] = self._build_tree_recursive(item)
@@ -124,20 +124,21 @@ class GitRepoManagerBase(ABC):
 
 
 class GITManagerGithub(GitRepoManagerBase):
-    def __init__(self):
-
-        if not self.repo_user or not BASE_BRANCH or not GITHUB_TOKEN or not GITHUB_USER:
+    def __init__(self, repo_name: str, repo_token: str, repo_user: str, local_path: str = None, ignore=[".git"]):
+        if not repo_user or not BASE_BRANCH or not GITHUB_TOKEN or not GITHUB_USER:
             raise ValueError("Please set the GITHUB_REPO, BASE_BRANCH, GITHUB_TOKEN, and GITHUB_USER environment variables")
 
-        self._repo_url = f"https://{self.repo_user}:{self.repo_token}@github.com/{self._repo_name}.git"
-        self.repo_exists()
-            
+        self._repo_url = f"https://{repo_user}:{repo_token}@github.com/{repo_name}.git"
+        super().__init__(repo_name, repo_token, repo_user, local_path, ignore)
+        # self.repo_exists()
+
+        print(self._repo_url)
         pass
     
     def repo_exists(self) -> bool:
-        url = f"https://api.github.com/repos/{self._repo_user}/{repo}"
+        url = f"https://api.github.com/repos/{self._repo_user}/{self.repo}"
         headers = {
-            "Authorization": f"token {token}",
+            "Authorization": f"token {self.repo_token}",
             "Accept": "application/vnd.github.v3+json"
         }
         response = requests.get(url, headers=headers)
@@ -145,14 +146,10 @@ class GITManagerGithub(GitRepoManagerBase):
        
         return True
         
-        
-    def clone_or_get_repo(self) -> Repo:
-
-        
-        
-        if os.path.exists(self.local_path):
-            return Repo(self.local_path)
-        return Repo.clone_from(repo_url, self.local_path)
+    def clone_or_get_repo(self) -> Repo:        
+        if os.path.exists(self._local_path):
+            return Repo(self._local_path)
+        return Repo.clone_from(self._repo_url, self._local_path)
 
     def get_open_issues(self):
         url = f"https://api.github.com/repos/{GITHUB_REPO}/issues"
@@ -176,9 +173,9 @@ class GITManagerDevops(GitRepoManagerBase):
             raise ValueError("Missing DevOps credentials in environment variables")
 
         repo_url = f"https://{token}@dev.azure.com/{org}/{project}/_git/{repo}"
-        if os.path.exists(self.local_path):
-            return Repo(self.local_path)
-        return Repo.clone_from(repo_url, self.local_path)
+        if os.path.exists(self._local_path):
+            return Repo(self._local_path)
+        return Repo.clone_from(repo_url, self._local_path)
 
     def get_open_issues(self):
         org = os.getenv("DEVOPS_ORG")

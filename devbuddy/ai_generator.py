@@ -5,8 +5,6 @@ from devbuddy.logger import logging
 from dotenv import load_dotenv
 load_dotenv() 
 
-
-
 NEXSUS_API_ENDPOINT, NEXSUS_API_KEY, NEXSUS_DEPLOYMENT_NAME = os.getenv("NEXSUS_API_ENDPOINT"), os.getenv("NEXSUS_API_KEY"), os.getenv("NEXSUS_DEPLOYMENT_NAME")
 if not NEXSUS_API_ENDPOINT or not NEXSUS_API_KEY or not NEXSUS_DEPLOYMENT_NAME: 
     raise ValueError("Please set the NEXSUS_API_ENDPOINT, NEXSUS_API_KEY, and NEXSUS_DEPLOYMENT_NAME environment variables")

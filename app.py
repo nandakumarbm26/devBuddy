@@ -2,7 +2,7 @@ from flask import Flask, request
 from dotenv import load_dotenv
 import os
 from devbuddy.ai_generator import generate_code_change, generate_text
-from devbuddy.repo_handler import GitRepoManager,  clean_text, extract_json_objects, fix_escape_pattern
+from devbuddy.GITManager import GITManagerGithub,  clean_text,  fix_escape_pattern
 from devbuddy.github_utils import get_open_issues
 import json
 from devbuddy.logger import logging
@@ -47,11 +47,11 @@ def issue_hook():
         return "Issue title or description is empty.", 400
 
     try:
-        manager = GitRepoManager(
+        manager = GITManagerGithub(
             "repo/nanda",
             ignore=['.git', 'package-lock.json', 'package.json', 'postcss.config.js']
         )
-        logging.info("GitRepoManager created successfully.")
+        logging.info("GITManagerGithub created successfully.")
 
         gen_changes = generate_code_change(issue_title, issue_desc, manager.repo_tree, manager.repo_content)
         logging.info("Code change generated.")
