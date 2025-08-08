@@ -6,27 +6,49 @@ import json
 from devbuddy.logger import logging
 from dotenv import load_dotenv
 import os
+from abc import ABC, abstractmethod
+
 load_dotenv() 
-
-
 LOG_FILE = os.getenv("LOG_FILE", "request_log.txt")
-GITHUB_REPO, BASE_BRANCH, GITHUB_TOKEN, GITHUB_USER = (os.getenv("GITHUB_REPO"), os.getenv("BASE_BRANCH"), os.getenv("GITHUB_TOKEN"), os.getenv("GITHUB_USER"))
+
+GITHUB_REPO, BASE_BRANCH, GITHUB_TOKEN, GITHUB_USER = (os.getenv("GITHUB_REPO"), os.getenv("BASE_BRANCH"), os.getenv("GITHUB_TOKEN"), os.getenv("GITHUB_USER")
+)
 if not GITHUB_REPO or not BASE_BRANCH or not GITHUB_TOKEN or not GITHUB_USER:
     raise ValueError("Please set the GITHUB_REPO, BASE_BRANCH, GITHUB_TOKEN, and GITHUB_USER environment variables")
 
-class GitRepoManager:
-    def __init__(self, local_path: str, ignore=[".git"]):
-        self.local_path = local_path
-        self.ignore = ignore
+
+
+
+LOG_FILE = os.getenv("LOG_FILE", "request_log.txt")
+
+
+
+class GitRepoManagerBase(ABC):
+    def __init__(self, repo_name:str, repo_token:str, repo_user:str, local_path: str = None, ignore=[".git"]):
+
+        self._local_path = local_path if local_path else f"repo/{repo_name}"
+        self._ignore = ignore
+        self._repo_name = repo_name
+        self.repo_token = repo_token
+        self.repo_user = repo_user
+
         self.repo = self.clone_or_get_repo()
         self.repo_tree = self.get_folder_structure()
         self.repo_content = self.build_tree_with_file_contents()
+        
+        pass
 
+    @abstractmethod
     def clone_or_get_repo(self) -> Repo:
-        repo_url = f"https://{GITHUB_USER}:{GITHUB_TOKEN}@github.com/{GITHUB_REPO}.git"
-        if os.path.exists(self.local_path):
-            return Repo(self.local_path)
-        return Repo.clone_from(repo_url, self.local_path)
+        pass
+
+    @abstractmethod
+    def get_open_issues(self):
+        pass
+
+    @abstractmethod
+    def repo_exists(self) -> bool:
+        pass
 
     def apply_code_changes(self, changes: list[tuple[str, str]]):
         for filename, content in changes:
@@ -45,7 +67,6 @@ class GitRepoManager:
     def create_branch(self, branch_name: str, checkout: bool = True):
         try:
             branch_names = [str(br) for br in self.repo.branches]
-            
             if branch_name in branch_names:
                 logging.info(f"Branch '{branch_name}' already exists locally.")
                 if checkout:
@@ -64,7 +85,7 @@ class GitRepoManager:
 
     def get_folder_structure(self) -> str:
         if self.ignore is None:
-           self.ignore = []
+            self.ignore = []
         response = ""
         for root, dirs, files in os.walk(self.local_path):
             level = root.replace(self.local_path, '').count(os.sep)
@@ -82,7 +103,7 @@ class GitRepoManager:
 
     def build_tree_with_file_contents(self) -> dict:
         if self.ignore is None:
-           self.ignore = [".git"]
+            self.ignore = [".git"]
         return self._build_tree_recursive(Path(self.local_path))
 
     def _build_tree_recursive(self, path: Path) -> dict:
@@ -99,6 +120,82 @@ class GitRepoManager:
                     content = f"<Error reading file: {e}>"
                 tree[item.name] = content
         return tree
+
+
+
+class GITManagerGithub(GitRepoManagerBase):
+    def __init__(self):
+
+        if not self.repo_user or not BASE_BRANCH or not GITHUB_TOKEN or not GITHUB_USER:
+            raise ValueError("Please set the GITHUB_REPO, BASE_BRANCH, GITHUB_TOKEN, and GITHUB_USER environment variables")
+
+        self._repo_url = f"https://{self.repo_user}:{self.repo_token}@github.com/{self._repo_name}.git"
+        self.repo_exists()
+            
+        pass
+    
+    def repo_exists(self) -> bool:
+        url = f"https://api.github.com/repos/{self._repo_user}/{repo}"
+        headers = {
+            "Authorization": f"token {token}",
+            "Accept": "application/vnd.github.v3+json"
+        }
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+       
+        return True
+        
+        
+    def clone_or_get_repo(self) -> Repo:
+
+        
+        
+        if os.path.exists(self.local_path):
+            return Repo(self.local_path)
+        return Repo.clone_from(repo_url, self.local_path)
+
+    def get_open_issues(self):
+        url = f"https://api.github.com/repos/{GITHUB_REPO}/issues"
+        headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            logging.error(f"GitHub API error: {response.status_code} - {response.text}")
+            return []
+
+
+class GITManagerDevops(GitRepoManagerBase):
+    def clone_or_get_repo(self) -> Repo:
+        org = os.getenv("DEVOPS_ORG")
+        project = os.getenv("DEVOPS_PROJECT")
+        repo = os.getenv("DEVOPS_REPO")
+        token = os.getenv("DEVOPS_PAT")
+
+        if not org or not project or not repo or not token:
+            raise ValueError("Missing DevOps credentials in environment variables")
+
+        repo_url = f"https://{token}@dev.azure.com/{org}/{project}/_git/{repo}"
+        if os.path.exists(self.local_path):
+            return Repo(self.local_path)
+        return Repo.clone_from(repo_url, self.local_path)
+
+    def get_open_issues(self):
+        org = os.getenv("DEVOPS_ORG")
+        project = os.getenv("DEVOPS_PROJECT")
+        token = os.getenv("DEVOPS_PAT")
+        url = f"https://dev.azure.com/{org}/{project}/_apis/wit/workitems?api-version=6.0"
+        headers = {
+            "Authorization": f"Basic {token}",
+            "Content-Type": "application/json"
+        }
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            logging.error(f"Azure DevOps API error: {response.status_code} - {response.text}")
+            return []
+
 
 
 

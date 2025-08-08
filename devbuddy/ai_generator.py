@@ -83,27 +83,22 @@ def generate_text(prompt):
     return response['choices'][0]['message']['content']
 
 def generate_code_change(issue_title, issue_body, files_tree, file_content):
-    prompt = f"""
-    You are a helpful and experienced developer assistant. Your task is to generate code updates based on the issue provided below.
+    system_prompt = f"""
+    # You are a helpful and experienced developer assistant. Your task is to generate code updates based on the issue provided below.
+    ## You will be provided with issue title, issue body (detailed instructions for the changes or fix to be done to the code base), file tree, file contents of the codebase.
 
-    Issue Title:
-    {issue_title}
-
-    Issue Description:
-    {issue_body}
-
-    Instructions:
+    ### Instructions:
     - Based on the provided issue, suggest relevant code updates.
     - Your response should strictly follow the specified JSON format.
     - Do not include any explanations or additional text—only the valid JSON output.
 
-    Format:
+    ### Format:
     Return a list of objects, each with the following keys:
     - "filename": Name of the file to be created or modified.
     - "content": Full content of the file after applying the necessary changes.
     - "path": File path relative to the project root.
 
-    Example:
+    ### Example:
     [
     {{
         "filename": "example.py",
@@ -114,14 +109,20 @@ def generate_code_change(issue_title, issue_body, files_tree, file_content):
 
     Please ensure all changes are consistent with the existing file tree and contents provided.
     """
+
+    issue_prompt = f"""
+    Issue Title: {issue_title}  
+    Issue Body: {issue_body}  
+    """
+
     ai = Nexus()
 
     response = ai.chat_completion([
-        {"role": "system", "content": "You write Python code updates."},
+        {"role": "system", "content": system_prompt},
         {"role": "system", "content": f"Here is the file tree:\n{files_tree}"},
         {"role": "system", "content": f"Here are the file contents:\n{file_content}"},
         {"role": "system", "content": "Respond only in valid JSON format as described in the prompt."},
-        {"role": "user", "content": prompt}
+        {"role": "user", "content": issue_prompt}
     ])
     logging.info(f"Response from AI: {response}")
     return response['choices'][0]['message']['content']
