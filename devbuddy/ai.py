@@ -5,20 +5,20 @@ from devbuddy.logger import logging
 from dotenv import load_dotenv
 load_dotenv() 
 
-NEXSUS_API_ENDPOINT, NEXSUS_API_KEY, NEXSUS_DEPLOYMENT_NAME = os.getenv("NEXSUS_API_ENDPOINT"), os.getenv("NEXSUS_API_KEY"), os.getenv("NEXSUS_DEPLOYMENT_NAME")
-if not NEXSUS_API_ENDPOINT or not NEXSUS_API_KEY or not NEXSUS_DEPLOYMENT_NAME: 
-    raise ValueError("Please set the NEXSUS_API_ENDPOINT, NEXSUS_API_KEY, and NEXSUS_DEPLOYMENT_NAME environment variables")
+OPENAI_API_ENDPOINT, OPENAI_API_KEY, OPENAI_DEPLOYMENT_NAME = os.getenv("OPENAI_API_ENDPOINT"), os.getenv("OPENAI_API_KEY"), os.getenv("OPENAI_DEPLOYMENT_NAME")
+if not OPENAI_API_ENDPOINT or not OPENAI_API_KEY or not OPENAI_DEPLOYMENT_NAME: 
+    raise ValueError("Please set the OPENAI_API_ENDPOINT, OPENAI_API_KEY, and OPENAI_DEPLOYMENT_NAME environment variables")
 
 
-nexus_api_key = NEXSUS_API_KEY
-azure_endpoint = NEXSUS_API_ENDPOINT
-deployment_name = NEXSUS_DEPLOYMENT_NAME
+openai_api_key = OPENAI_API_KEY
+azure_endpoint = OPENAI_API_ENDPOINT
+deployment_name = OPENAI_DEPLOYMENT_NAME
 
-if not nexus_api_key or not azure_endpoint or not deployment_name:
-    raise ValueError("Please set the NEXSUS_API_KEY, NEXSUS_API_ENDPOINT, and NEXSUS_DEPLOYMENT_NAME environment variables")
+if not openai_api_key or not azure_endpoint or not deployment_name:
+    raise ValueError("Please set the OPENAI_API_KEY, OPENAI_API_ENDPOINT, and OPENAI_DEPLOYMENT_NAME environment variables")
 
-class Nexus:
-    def __init__(self, api_key: str=nexus_api_key, endpoint: str=azure_endpoint, deployment_name: str=deployment_name, api_version: str = "2023-03-15-preview"):
+class OpenAI:
+    def __init__(self, api_key: str=openai_api_key, endpoint: str=azure_endpoint, deployment_name: str=deployment_name, api_version: str = "2023-03-15-preview"):
         """
         Initializes the Azure OpenAI wrapper.
 
@@ -72,7 +72,7 @@ class Nexus:
 
 
 def generate_text(prompt):
-    ai = Nexus()
+    ai = OpenAI()
 
     response = ai.chat_completion([
         {"role": "system", "content": "You are a useful agent. Answer concisely and up to the point."},
@@ -113,7 +113,7 @@ def generate_code_change(issue_title, issue_body, files_tree, file_content):
     Issue Body: {issue_body}  
     """
 
-    ai = Nexus()
+    ai = OpenAI()
 
     response = ai.chat_completion([
         {"role": "system", "content": system_prompt},

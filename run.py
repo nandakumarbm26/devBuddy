@@ -1,4 +1,4 @@
-from devbuddy.ai_generator import generate_code_change, generate_text
+from devbuddy.ai import generate_code_change, generate_text
 from devbuddy.GITManager import GITManagerGithub, clean_text, fix_escape_pattern
 import json, os
 
@@ -18,7 +18,7 @@ issues = manager.get_open_issues()
 
 
 for issue in issues:
-    manager.create_branch(BASE_BRANCH)
+    # manager.create_branch(BASE_BRANCH)
     print('brabnch created')
     issue_title = issue['title']
     issue_desc = issue['body']
@@ -29,4 +29,4 @@ for issue in issues:
     file_changes = [(f"{change['path']}/{change['filename']}",change['content']) for change in changes]
     manager.apply_code_changes(file_changes)
     commit_msg = generate_text(f"Create a commit message for the following code updates in 10 words. {str(changes)}")
-    manager.commit_and_push(branch_name,commit_msg)
+    # manager.commit_and_push(branch_name,commit_msg)

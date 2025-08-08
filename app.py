@@ -1,7 +1,7 @@
 from flask import Flask, request
 from dotenv import load_dotenv
 import os
-from devbuddy.ai_generator import generate_code_change, generate_text
+from devbuddy.ai import generate_code_change, generate_text
 from devbuddy.GITManager import GITManagerGithub,  clean_text,  fix_escape_pattern
 from devbuddy.github_utils import get_open_issues
 import json

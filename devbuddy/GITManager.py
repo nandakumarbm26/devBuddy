@@ -131,8 +131,6 @@ class GITManagerGithub(GitRepoManagerBase):
         self._repo_url = f"https://{repo_user}:{repo_token}@github.com/{repo_name}.git"
         super().__init__(repo_name, repo_token, repo_user, local_path, ignore)
         # self.repo_exists()
-
-        print(self._repo_url)
         pass
     
     def repo_exists(self) -> bool:

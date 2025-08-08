@@ -48,11 +48,11 @@ work_items = devops_manager.get_open_issues()
 
 # AI Generator Module
 
-This module provides integration with Azure OpenAI (Nexus) to automate code generation and text completion tasks for developer workflows.
+This module provides integration with Azure OpenAI (OpenAI) to automate code generation and text completion tasks for developer workflows.
 
 ## Features
 
-- **Nexus Class**: Wrapper for Azure OpenAI API, supporting chat completions and embeddings.
+- **OpenAI Class**: Wrapper for Azure OpenAI API, supporting chat completions and embeddings.
 - **generate_text(prompt)**: Generates concise text responses using the AI model.
 - **generate_code_change(issue_title, issue_body, files_tree, file_content)**: Produces code change suggestions in JSON format based on a GitHub issue and the current codebase context.
 
