@@ -60,9 +60,9 @@ This module provides integration with Azure OpenAI (OpenAI) to automate code gen
 
 Ensure the following variables are set (see `.env`):
 
-- `NEXSUS_API_ENDPOINT`: Azure OpenAI endpoint URL.
-- `NEXSUS_API_KEY`: API key for authentication.
-- `NEXSUS_DEPLOYMENT_NAME`: Model deployment name.
+- `OPENAI_API_ENDPOINT`: Azure OpenAI endpoint URL.
+- `OPENAI_API_KEY`: API key for authentication.
+- `OPENAI_DEPLOYMENT_NAME`: Model deployment name.
 
 ## Usage Example
 
@@ -92,9 +92,9 @@ Before running the application, ensure the following environment variables are s
 | `GITHUB_TOKEN`           | Personal access token with access to the GitHub repository.                  |
 | `GITHUB_REPO`            | Full name of the GitHub repository (e.g., `username/repo`).                  |
 | `BASE_BRANCH`            | The base branch to which changes will be merged (e.g., `main` or `develop`). |
-| `NEXSUS_API_KEY`         | API key to authenticate with the Nexsus API.                                 |
-| `NEXSUS_API_ENDPOINT`    | The endpoint URL of the Nexsus API.                                          |
-| `NEXSUS_DEPLOYMENT_NAME` | Name of the deployment to be triggered or managed on Nexsus.                 |
+| `OPENAI_API_KEY`         | API key to authenticate with the openAI API.                                 |
+| `OPENAI_API_ENDPOINT`    | The endpoint URL of the openAI API.                                          |
+| `OPENAI_DEPLOYMENT_NAME` | Name of the deployment to be triggered or managed on openAI.                 |
 | `GITHUB_USER`            | GitHub username of the account performing actions.                           |
 | `LOG_FILE`               | Path or name of the log file to store application logs.                      |
 
